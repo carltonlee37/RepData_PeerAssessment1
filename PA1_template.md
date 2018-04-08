@@ -12,7 +12,8 @@ The data reports number of steps taken in 5-minute intervals daily over a 2 mont
 
 First, we download and unzip the data into a new local directory called 'activity', load it into an R dataframe, and convert the class of variable 'date' from factor to date:
 
-```{r load data}
+
+```r
 ## Create and set directory for this project
 if(!file.exists("./activity")){
     dir.create("./activity")
@@ -31,7 +32,8 @@ activity$date<-as.Date(as.character(activity$date,"%m/%d/%y"))
 
 Then we calculate the total, mean, and median number of steps taken daily. We'll use the dplyr package to calculate total steps taken each day:
 
-```{r steps per day, message=FALSE, warning=FALSE}
+
+```r
 ## Load dplyr library
 library(dplyr)
 
@@ -43,7 +45,8 @@ medianStepsPerDay<-median(stepsPerDay$totalSteps)
 
 Let's look a histogram of total steps taken daily, and also the mean and media of steps per day:
 
-```{r histogram}
+
+```r
 ## Plot total, mean, and median of steps taken daily
 par(mar=c(8,4,3,2))
 with(stepsPerDay,plot(date,totalSteps,type="h",lwd=3,ylab="steps",main="Total Steps Taken Daily"))
@@ -51,9 +54,12 @@ with(stepsPerDay,plot(date,totalSteps,type="h",lwd=3,ylab="steps",main="Total St
     mtext(note,1,5)
 ```
 
+![](PA1_template_files/figure-html/histogram-1.png)<!-- -->
+
 Next we look for activity patterns by plotting a time series of steps taken in 5 minute intervals averaged across all days. We also note the maximum average steps and the interval at which this occurred.
 
-```{r time series}
+
+```r
 ## Aggregate the mean of steps taken in each interval of every day and plot
 meanint<-aggregate(steps~interval,data=activity,mean)
 plot(meanint,type="l",main="Average Steps Taken per 5 Minute Interval")
@@ -64,9 +70,12 @@ points(meanint[which.max(meanint$steps),1],max(meanint$steps),pch=16)
 text(meanint[which.max(meanint$steps),1],max(meanint$steps),maxnote,pos=4)
 ```
 
-Now, there are a number of missing values in the data... **`r sum(is.na(activity$steps))`** to be exact. What happens if we impute these values with the average steps taken in that interval across all days? Again we use the dplyr package:
+![](PA1_template_files/figure-html/time series-1.png)<!-- -->
 
-```{r impute NAs and plot}
+Now, there are a number of missing values in the data... **2304** to be exact. What happens if we impute these values with the average steps taken in that interval across all days? Again we use the dplyr package:
+
+
+```r
 ## Replace NAs with average 'steps' by 'interval' and store in new data frame
 activityImputed<-activity%>%group_by(interval)%>%mutate(steps=ifelse(is.na(steps),round(mean(steps,na.rm=TRUE),0),steps))
 
@@ -82,9 +91,12 @@ with(stepsPerDayI,plot(date,totalSteps,type="h",lwd=3,ylab="steps",main="Total S
     mtext(noteI,1,5)
 ```
 
+![](PA1_template_files/figure-html/impute NAs and plot-1.png)<!-- -->
+
 Does this change the data noticeably? Let's compare the data with missing values to the data where missing values are imputed and see:
 
-```{r comparison plot of datasets}
+
+```r
 ## Format graphic device and plot comparisons side-by-side
 par(mfrow=c(1,2),mar=c(8,3,3,2))
     with(stepsPerDay,plot(date,totalSteps,type="h",lwd=2,main="Total Steps Taken Daily"))
@@ -93,11 +105,14 @@ par(mfrow=c(1,2),mar=c(8,3,3,2))
     mtext(noteI,1,5)
 ```
 
+![](PA1_template_files/figure-html/comparison plot of datasets-1.png)<!-- -->
+
 We can see that on days for which no data was available we now have data comprised of the mean of intervals for all other days in the dataset, but that the mean and median number of steps per day has not changed significantly.
 
 Finally, let's see if there are any differences in activity patterns for weekdays and weekends. We'll use the data with missing values imputed to create time series plots of the average number of steps taken in 5 minute intervals, averaged across all weekday days or weekend days.
 
-```{r }
+
+```r
 ## Create factor variable 'wDay' with two levels 'weekday' and 'weekend'
 weekend<-c("Saturday","Sunday")
 activityImputed$wDay<-factor((weekdays(activityImputed$date)%in%weekend),levels=c(FALSE,TRUE),labels=c("weekday","weekend"))
@@ -114,5 +129,7 @@ par(mfrow=c(2,1),mar=c(0,3,0,3),oma=c(4,2,2,0))
     mtext("Average number of steps",2,0,outer=TRUE)
     mtext("Interval",1,3,outer=TRUE)
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-1-1.png)<!-- -->
 
 We see very different patterns on weekdays and weekends! Maybe something to explore further... but for now, we are done!
